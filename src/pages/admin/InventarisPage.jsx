@@ -39,7 +39,8 @@ export default function InventarisPage() {
 
   const emptyForm = () => ({
     kode: '', nama: '', kategori: '', lokasi: '', kondisi: 'baik', status: 'tersedia',
-    jumlah: 1, harga: 0, foto: '', tanggalMasuk: new Date().toISOString().split('T')[0], keterangan: ''
+    jumlah: 1, harga: 0, foto: '', tanggalMasuk: new Date().toISOString().split('T')[0], 
+    tahun: new Date().getFullYear(), sumberDana: '', keterangan: ''
   });
 
   const openAdd = () => {
@@ -149,6 +150,8 @@ export default function InventarisPage() {
                 <th>Kode Barang</th>
                 <th>Nama Barang</th>
                 <th>Kategori & Lokasi</th>
+                <th>Tahun</th>
+                <th>Sumber Dana</th>
                 <th>Kondisi</th>
                 <th>Status</th>
                 <th>Stok</th>
@@ -158,7 +161,7 @@ export default function InventarisPage() {
             <tbody>
               {filteredData.length === 0 ? (
                 <tr>
-                  <td colSpan={9} style={{ textAlign: 'center', padding: 'var(--space-8)', color: 'var(--text-tertiary)' }}>
+                  <td colSpan={11} style={{ textAlign: 'center', padding: 'var(--space-8)', color: 'var(--text-tertiary)' }}>
                     {searchTerm || filterKategori ? 'Tidak ditemukan data yang sesuai.' : 'Belum ada data inventaris. Klik "Tambah Barang" untuk memulai.'}
                   </td>
                 </tr>
@@ -184,6 +187,8 @@ export default function InventarisPage() {
                         <span style={{ fontSize: 'var(--font-size-xs)', color: 'var(--text-tertiary)' }}>{item.lokasi}</span>
                       </div>
                     </td>
+                    <td>{item.tahun || '-'}</td>
+                    <td>{item.sumberDana || '-'}</td>
                     <td>
                       <span className={`badge badge-${badgeKondisi.variant}`}>{badgeKondisi.label}</span>
                     </td>
@@ -271,6 +276,14 @@ export default function InventarisPage() {
             <input type="date" className="input" value={formData.tanggalMasuk || ''} onChange={e => setFormData(prev => ({ ...prev, tanggalMasuk: e.target.value }))} />
           </div>
           <div className="input-group">
+            <label>Tahun Pengadaan</label>
+            <input type="number" className="input" placeholder="Contoh: 2024" value={formData.tahun || ''} onChange={e => setFormData(prev => ({ ...prev, tahun: parseInt(e.target.value) || '' }))} />
+          </div>
+          <div className="input-group">
+            <label>Sumber Dana</label>
+            <input className="input" placeholder="Contoh: BOS, Komite" value={formData.sumberDana || ''} onChange={e => setFormData(prev => ({ ...prev, sumberDana: e.target.value }))} />
+          </div>
+          <div className="input-group">
             <label>Foto</label>
             <div style={{ display: 'flex', gap: 'var(--space-2)', alignItems: 'center' }}>
               <label className="btn btn-secondary btn-sm" style={{ cursor: 'pointer' }}>
@@ -310,6 +323,8 @@ export default function InventarisPage() {
                 ['Nama Barang', detailModal.nama],
                 ['Kategori', detailModal.kategori],
                 ['Lokasi', detailModal.lokasi],
+                ['Tahun Pengadaan', detailModal.tahun || '-'],
+                ['Sumber Dana', detailModal.sumberDana || '-'],
                 ['Kondisi', getStatusBadge(detailModal.kondisi).label],
                 ['Status', getStatusBadge(detailModal.status).label],
                 ['Jumlah', detailModal.jumlah],
