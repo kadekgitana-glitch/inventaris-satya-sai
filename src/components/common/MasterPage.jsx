@@ -3,9 +3,10 @@ import { Database, Plus, Search, Edit2, Trash2 } from 'lucide-react';
 import Modal from './Modal';
 import ConfirmDialog from './ConfirmDialog';
 import dataService from '../../services/dataService';
+import { useData } from '../../hooks/useData';
 
 export default function MasterPage({ type, title, subtitle, columns, formFields }) {
-  const [data, setData] = useState(() => dataService.getAll(type));
+  const [data, setData] = useData(type);
   const [searchTerm, setSearchTerm] = useState('');
   const [modalOpen, setModalOpen] = useState(false);
   const [editItem, setEditItem] = useState(null);

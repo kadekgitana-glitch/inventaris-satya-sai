@@ -1,7 +1,8 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import { ThemeProvider } from './context/ThemeContext';
-import { Suspense, lazy } from 'react';
+import { Suspense, lazy, useEffect } from 'react';
+import { initRealtimeSync } from './services/dataService';
 
 import GlobalLoading from './components/common/GlobalLoading';
 import AdminLayout from './layouts/AdminLayout';
@@ -35,6 +36,10 @@ const LaporanPage = lazy(() => import('./pages/admin/LaporanPage'));
 const PengaturanPage = lazy(() => import('./pages/admin/PengaturanPage'));
 
 function AppContent() {
+  useEffect(() => {
+    initRealtimeSync();
+  }, []);
+
   return (
     <Suspense fallback={<GlobalLoading />}>
       <Routes>

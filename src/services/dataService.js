@@ -176,9 +176,33 @@ async function syncToFirebase(collection, data) {
   try {
     const dbRef = ref(db, `inventaris_app/${collection}`);
     await set(dbRef, data);
+    // Tell local components that data has been updated (for optimistic UI)
+    window.dispatchEvent(new CustomEvent('data-sync', { detail: collection }));
   } catch (err) {
     console.warn(`Firebase sync failed for ${collection}:`, err.message);
   }
+}
+
+// Realtime Listener Setup
+let isRealtimeInitialized = false;
+
+export function initRealtimeSync() {
+  if (isRealtimeInitialized) return;
+  isRealtimeInitialized = true;
+  
+  const collections = Object.keys(COLLECTIONS);
+  collections.forEach(col => {
+    const dbRef = ref(db, `inventaris_app/${col}`);
+    onValue(dbRef, (snapshot) => {
+      const data = snapshot.val();
+      if (data) {
+        // Save remote changes to local storage
+        storage.set(`data_${col}`, data);
+        // Dispatch event so React hooks can update the UI instantly
+        window.dispatchEvent(new CustomEvent('data-sync', { detail: col }));
+      }
+    });
+  });
 }
 
 export default dataService;

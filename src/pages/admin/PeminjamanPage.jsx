@@ -4,9 +4,10 @@ import { formatDateTime, getStatusBadge } from '../../utils/format';
 import Modal from '../../components/common/Modal';
 import ConfirmDialog from '../../components/common/ConfirmDialog';
 import dataService from '../../services/dataService';
+import { useData } from '../../hooks/useData';
 
 export default function PeminjamanPage() {
-  const [data, setData] = useState(() => dataService.getAll('peminjaman'));
+  const [data, setData] = useData('peminjaman');
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState('');
   const [modalOpen, setModalOpen] = useState(false);

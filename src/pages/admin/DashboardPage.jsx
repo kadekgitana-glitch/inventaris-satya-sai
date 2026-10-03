@@ -5,14 +5,15 @@ import { Package, ArrowLeftRight, AlertTriangle, CheckCircle, TrendingUp, Box, C
 import { PieChart, Pie, Cell, ResponsiveContainer, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip } from 'recharts';
 import { formatNumber } from '../../utils/format';
 import dataService from '../../services/dataService';
+import { useData } from '../../hooks/useData';
 
 export default function DashboardPage() {
   const { user } = useAuth();
   const { config } = useTheme();
 
-  // Real data from dataService
-  const inventaris = useMemo(() => dataService.getAll('inventaris'), []);
-  const peminjaman = useMemo(() => dataService.getAll('peminjaman'), []);
+  // Real data from dataService (with real-time sync)
+  const [inventaris] = useData('inventaris');
+  const [peminjaman] = useData('peminjaman');
 
   const totalInventaris = inventaris.length;
   const sedangDipinjam = peminjaman.filter(p => p.status === 'active' || p.status === 'overdue').length;

@@ -4,9 +4,10 @@ import { formatDate, formatCurrency } from '../../utils/format';
 import Modal from '../../components/common/Modal';
 import ConfirmDialog from '../../components/common/ConfirmDialog';
 import dataService from '../../services/dataService';
+import { useData } from '../../hooks/useData';
 
 export default function StockPage({ collection, title, subtitle, direction = 'masuk', fields = [] }) {
-  const [data, setData] = useState(() => dataService.getAll(collection));
+  const [data, setData] = useData(collection);
   const [searchTerm, setSearchTerm] = useState('');
   const [modalOpen, setModalOpen] = useState(false);
   const [detailModal, setDetailModal] = useState(null);

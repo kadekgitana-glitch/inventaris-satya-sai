@@ -5,9 +5,10 @@ import Modal from '../../components/common/Modal';
 import ConfirmDialog from '../../components/common/ConfirmDialog';
 import dataService from '../../services/dataService';
 import { uploadToCloudinary } from '../../lib/cloudinary';
+import { useData } from '../../hooks/useData';
 
 export default function InventarisPage() {
-  const [data, setData] = useState(() => dataService.getAll('inventaris'));
+  const [data, setData] = useData('inventaris');
   const [searchTerm, setSearchTerm] = useState('');
   const [filterKategori, setFilterKategori] = useState('');
   const [modalOpen, setModalOpen] = useState(false);
