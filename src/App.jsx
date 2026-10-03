@@ -11,12 +11,28 @@ const LoginPage = lazy(() => import('./pages/LoginPage'));
 const DashboardPage = lazy(() => import('./pages/admin/DashboardPage'));
 const InventarisPage = lazy(() => import('./pages/admin/InventarisPage'));
 const PeminjamanPage = lazy(() => import('./pages/admin/PeminjamanPage'));
+const PengembalianPage = lazy(() => import('./pages/admin/PengembalianPage'));
 
+// Data Master
 const KategoriPage = lazy(() => import('./pages/admin/master/KategoriPage'));
 const LokasiPage = lazy(() => import('./pages/admin/master/LokasiPage'));
+const SupplierPage = lazy(() => import('./pages/admin/master/SupplierPage'));
 
-const PlaceholderPage = lazy(() => import('./pages/PlaceholderPage'));
+// Mutasi
+const MutasiMasukPage = lazy(() => import('./pages/admin/MutasiMasukPage'));
+const MutasiKeluarPage = lazy(() => import('./pages/admin/MutasiKeluarPage'));
+
+// ATK
+const ATKRestockPage = lazy(() => import('./pages/admin/ATKRestockPage'));
+const ATKWithdrawPage = lazy(() => import('./pages/admin/ATKWithdrawPage'));
+
+// Kebersihan
+const KebersihanRestockPage = lazy(() => import('./pages/admin/KebersihanRestockPage'));
+const KebersihanWithdrawPage = lazy(() => import('./pages/admin/KebersihanWithdrawPage'));
+
+// Laporan & Pengaturan
 const LaporanPage = lazy(() => import('./pages/admin/LaporanPage'));
+const PengaturanPage = lazy(() => import('./pages/admin/PengaturanPage'));
 
 function AppContent() {
   return (
@@ -31,32 +47,32 @@ function AppContent() {
           {/* Data Master */}
           <Route path="master/kategori" element={<KategoriPage />} />
           <Route path="master/lokasi" element={<LokasiPage />} />
-          <Route path="master/supplier" element={<PlaceholderPage title="Data Supplier" subtitle="Kelola data supplier/vendor" />} />
+          <Route path="master/supplier" element={<SupplierPage />} />
 
           {/* Inventaris */}
           <Route path="inventaris" element={<InventarisPage />} />
 
           {/* Sirkulasi */}
           <Route path="sirkulasi/daftar" element={<PeminjamanPage />} />
-          <Route path="sirkulasi/pengembalian" element={<PlaceholderPage title="Pengembalian" subtitle="Proses pengembalian barang" />} />
+          <Route path="sirkulasi/pengembalian" element={<PengembalianPage />} />
 
           {/* Mutasi */}
-          <Route path="mutasi/masuk" element={<PlaceholderPage title="Barang Masuk" subtitle="Catat barang baru yang masuk" />} />
-          <Route path="mutasi/keluar" element={<PlaceholderPage title="Barang Keluar" subtitle="Catat barang yang keluar" />} />
+          <Route path="mutasi/masuk" element={<MutasiMasukPage />} />
+          <Route path="mutasi/keluar" element={<MutasiKeluarPage />} />
 
           {/* ATK */}
-          <Route path="atk/restock" element={<PlaceholderPage title="Stok Masuk ATK" subtitle="Catat pengadaan ATK baru" />} />
-          <Route path="atk/withdraw" element={<PlaceholderPage title="Stok Keluar ATK" subtitle="Catat distribusi ATK" />} />
+          <Route path="atk/restock" element={<ATKRestockPage />} />
+          <Route path="atk/withdraw" element={<ATKWithdrawPage />} />
 
           {/* Kebersihan */}
-          <Route path="kebersihan/restock" element={<PlaceholderPage title="Stok Masuk Kebersihan" subtitle="Catat pengadaan alat kebersihan" />} />
-          <Route path="kebersihan/withdraw" element={<PlaceholderPage title="Stok Keluar Kebersihan" subtitle="Catat distribusi alat kebersihan" />} />
+          <Route path="kebersihan/restock" element={<KebersihanRestockPage />} />
+          <Route path="kebersihan/withdraw" element={<KebersihanWithdrawPage />} />
 
           {/* Laporan */}
           <Route path="laporan" element={<LaporanPage />} />
 
           {/* Pengaturan */}
-          <Route path="pengaturan" element={<PlaceholderPage title="Pengaturan Aplikasi" subtitle="Konfigurasi tema, identitas sekolah, dan keamanan" />} />
+          <Route path="pengaturan" element={<PengaturanPage />} />
         </Route>
 
         <Route path="*" element={<Navigate to="/login" replace />} />

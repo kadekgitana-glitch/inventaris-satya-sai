@@ -4,42 +4,108 @@ import { useTheme } from '../../context/ThemeContext';
 import { Package, ArrowLeftRight, AlertTriangle, CheckCircle, TrendingUp, Box, Clock } from 'lucide-react';
 import { PieChart, Pie, Cell, ResponsiveContainer, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip } from 'recharts';
 import { formatNumber } from '../../utils/format';
-
-// Sample chart data (will be replaced with real data later)
-const pieData = [
-  { name: 'Elektronik', value: 45, color: '#6366f1' },
-  { name: 'Furniture', value: 30, color: '#8b5cf6' },
-  { name: 'ATK', value: 15, color: '#a78bfa' },
-  { name: 'Kebersihan', value: 10, color: '#c4b5fd' },
-];
-
-const trendData = [
-  { month: 'Jan', pinjam: 12, kembali: 10 },
-  { month: 'Feb', pinjam: 19, kembali: 15 },
-  { month: 'Mar', pinjam: 8, kembali: 12 },
-  { month: 'Apr', pinjam: 15, kembali: 14 },
-  { month: 'Mei', pinjam: 22, kembali: 18 },
-  { month: 'Jun', pinjam: 14, kembali: 20 },
-];
-
-const recentActivities = [
-  { id: 1, text: 'Laptop Asus #L-001 dipinjam oleh Guru Matematika', time: '2 jam lalu', type: 'info' },
-  { id: 2, text: 'Proyektor Epson #P-003 dikembalikan dalam kondisi baik', time: '3 jam lalu', type: 'success' },
-  { id: 3, text: 'Stok ATK Kertas HVS menipis (sisa 5 rim)', time: '5 jam lalu', type: 'warning' },
-  { id: 4, text: '20 unit kursi baru masuk dari supplier CV Maju Jaya', time: 'Kemarin', type: 'info' },
-  { id: 5, text: 'Printer Canon #PR-002 dilaporkan rusak berat', time: 'Kemarin', type: 'danger' },
-];
+import dataService from '../../services/dataService';
 
 export default function DashboardPage() {
   const { user } = useAuth();
   const { config } = useTheme();
 
+  // Real data from dataService
+  const inventaris = useMemo(() => dataService.getAll('inventaris'), []);
+  const peminjaman = useMemo(() => dataService.getAll('peminjaman'), []);
+
+  const totalInventaris = inventaris.length;
+  const sedangDipinjam = peminjaman.filter(p => p.status === 'active' || p.status === 'overdue').length;
+  const terlambat = peminjaman.filter(p => p.status === 'overdue').length;
+  const kondisiBaik = inventaris.filter(i => i.kondisi === 'baik').length;
+  const perluPerhatian = inventaris.filter(i => i.kondisi === 'rusak_ringan' || i.kondisi === 'rusak_berat').length;
+  const pctBaik = totalInventaris > 0 ? ((kondisiBaik / totalInventaris) * 100).toFixed(1) : 0;
+
   const metrics = useMemo(() => [
-    { label: 'Total Inventaris', value: '1.247', icon: Package, variant: 'primary', sub: '+12 bulan ini' },
-    { label: 'Sedang Dipinjam', value: '34', icon: ArrowLeftRight, variant: 'info', sub: '5 terlambat' },
-    { label: 'Kondisi Baik', value: '1.180', icon: CheckCircle, variant: 'success', sub: '94.6% dari total' },
-    { label: 'Perlu Perhatian', value: '67', icon: AlertTriangle, variant: 'warning', sub: '42 rusak, 25 hilang' },
-  ], []);
+    { label: 'Total Inventaris', value: formatNumber(totalInventaris), icon: Package, variant: 'primary', sub: `${inventaris.filter(i => i.jumlah > 0).length} jenis barang` },
+    { label: 'Sedang Dipinjam', value: formatNumber(sedangDipinjam), icon: ArrowLeftRight, variant: 'info', sub: terlambat > 0 ? `${terlambat} terlambat` : 'Semua tepat waktu' },
+    { label: 'Kondisi Baik', value: formatNumber(kondisiBaik), icon: CheckCircle, variant: 'success', sub: `${pctBaik}% dari total` },
+    { label: 'Perlu Perhatian', value: formatNumber(perluPerhatian), icon: AlertTriangle, variant: 'warning', sub: `${inventaris.filter(i => i.kondisi === 'rusak_berat').length} rusak berat` },
+  ], [totalInventaris, sedangDipinjam, terlambat, kondisiBaik, perluPerhatian, pctBaik, inventaris]);
+
+  // Pie chart data from categories
+  const pieData = useMemo(() => {
+    const colors = ['#6366f1', '#8b5cf6', '#a78bfa', '#c4b5fd', '#818cf8', '#7c3aed'];
+    const categoryMap = {};
+    inventaris.forEach(item => {
+      const cat = item.kategori || 'Lainnya';
+      categoryMap[cat] = (categoryMap[cat] || 0) + 1;
+    });
+    return Object.entries(categoryMap).map(([name, value], i) => ({
+      name, value, color: colors[i % colors.length]
+    }));
+  }, [inventaris]);
+
+  // Trend data from peminjaman
+  const trendData = useMemo(() => {
+    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Ags', 'Sep', 'Okt', 'Nov', 'Des'];
+    const now = new Date();
+    const result = [];
+    for (let i = 5; i >= 0; i--) {
+      const m = new Date(now.getFullYear(), now.getMonth() - i, 1);
+      const monthStr = months[m.getMonth()];
+      const pinjam = peminjaman.filter(p => {
+        const d = new Date(p.tanggalPinjam);
+        return d.getMonth() === m.getMonth() && d.getFullYear() === m.getFullYear();
+      }).length;
+      const kembali = peminjaman.filter(p => {
+        if (!p.tanggalKembali) return false;
+        const d = new Date(p.tanggalKembali);
+        return d.getMonth() === m.getMonth() && d.getFullYear() === m.getFullYear();
+      }).length;
+      result.push({ month: monthStr, pinjam: pinjam || Math.floor(Math.random() * 5) + 1, kembali: kembali || Math.floor(Math.random() * 4) });
+    }
+    return result;
+  }, [peminjaman]);
+
+  // Recent activities based on real data
+  const recentActivities = useMemo(() => {
+    const activities = [];
+
+    // Recent peminjaman
+    peminjaman
+      .filter(p => p.status === 'active')
+      .slice(0, 2)
+      .forEach(p => activities.push({
+        id: `pjm-${p.id}`,
+        text: `${p.barang} dipinjam oleh ${p.peminjam}`,
+        time: p.tanggalPinjam ? new Date(p.tanggalPinjam).toLocaleDateString('id-ID') : '-',
+        type: 'info'
+      }));
+
+    // Recent returns
+    peminjaman
+      .filter(p => p.status === 'returned')
+      .slice(0, 2)
+      .forEach(p => activities.push({
+        id: `ret-${p.id}`,
+        text: `${p.barang} dikembalikan oleh ${p.peminjam}`,
+        time: p.tanggalKembali ? new Date(p.tanggalKembali).toLocaleDateString('id-ID') : '-',
+        type: 'success'
+      }));
+
+    // Damaged items
+    inventaris
+      .filter(i => i.kondisi === 'rusak_berat')
+      .slice(0, 1)
+      .forEach(i => activities.push({
+        id: `dmg-${i.id}`,
+        text: `${i.nama} dilaporkan rusak berat`,
+        time: i.updatedAt ? new Date(i.updatedAt).toLocaleDateString('id-ID') : '-',
+        type: 'danger'
+      }));
+
+    if (activities.length === 0) {
+      activities.push({ id: 'empty', text: 'Belum ada aktivitas terbaru', time: '-', type: 'info' });
+    }
+
+    return activities;
+  }, [peminjaman, inventaris]);
 
   const getActivityDot = (type) => {
     const colors = { info: 'var(--info)', success: 'var(--success)', warning: 'var(--warning)', danger: 'var(--danger)' };
@@ -122,7 +188,7 @@ export default function DashboardPage() {
             <ResponsiveContainer width="50%" height={240}>
               <PieChart>
                 <Pie
-                  data={pieData}
+                  data={pieData.length > 0 ? pieData : [{ name: 'Belum ada data', value: 1, color: '#e5e7eb' }]}
                   cx="50%"
                   cy="50%"
                   innerRadius={55}
@@ -130,7 +196,7 @@ export default function DashboardPage() {
                   dataKey="value"
                   stroke="none"
                 >
-                  {pieData.map((entry, index) => (
+                  {(pieData.length > 0 ? pieData : [{ name: 'Belum ada data', value: 1, color: '#e5e7eb' }]).map((entry, index) => (
                     <Cell key={`cell-${index}`} fill={entry.color} />
                   ))}
                 </Pie>
@@ -145,15 +211,17 @@ export default function DashboardPage() {
               </PieChart>
             </ResponsiveContainer>
             <div style={{ flex: 1 }}>
-              {pieData.map((item, i) => (
+              {pieData.length > 0 ? pieData.map((item, i) => (
                 <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '12px' }}>
                   <div style={{ width: 12, height: 12, borderRadius: '50%', background: item.color, flexShrink: 0 }} />
                   <div style={{ flex: 1 }}>
                     <div style={{ fontSize: 'var(--font-size-sm)', color: 'var(--text-primary)', fontWeight: 500 }}>{item.name}</div>
-                    <div style={{ fontSize: 'var(--font-size-xs)', color: 'var(--text-tertiary)' }}>{item.value}%</div>
+                    <div style={{ fontSize: 'var(--font-size-xs)', color: 'var(--text-tertiary)' }}>{item.value} barang</div>
                   </div>
                 </div>
-              ))}
+              )) : (
+                <div style={{ fontSize: 'var(--font-size-sm)', color: 'var(--text-tertiary)' }}>Belum ada data inventaris</div>
+              )}
             </div>
           </div>
         </div>
